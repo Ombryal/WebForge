@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -28,6 +27,7 @@ jobs:
           tests/compiler_tests.cpp
           src/webforge/lexer/Lexer.cpp
           src/webforge/parser/Parser.cpp
+          src/webforge/codegen/CodeGen.cpp
           -o build/compiler_tests
 
       - name: Run tests
