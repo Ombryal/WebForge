@@ -22,6 +22,9 @@ private:
     std::string generateImage(const ast::ImageStatement& image) const;
     std::string generateLink(const ast::LinkStatement& link) const;
     std::string generateButton(const ast::ButtonStatement& button) const;
+    std::string generateList(const ast::ListStatement& list) const;
+    std::string generateContainer(const ast::ContainerStatement& container) const;
+    std::string generateContainerChild(const ast::ContainerChild& child) const;
 
     std::string generateClickJs(const ast::ButtonStatement& button) const;
     std::string generateActionJs(const ast::Action& action) const;
