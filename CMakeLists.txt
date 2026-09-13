@@ -13,6 +13,7 @@ endif()
 # Core compiler library
 add_library(webforge_lib STATIC
     src/webforge/lexer/Lexer.cpp
+    src/webforge/parser/Parser.cpp
 )
 target_include_directories(webforge_lib PUBLIC src)
 
