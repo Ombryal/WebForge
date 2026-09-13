@@ -18,6 +18,9 @@ public:
 private:
     std::string generateStatement(const ast::Statement& statement) const;
     std::string generateText(const ast::TextStatement& text) const;
+    std::string generateHeading(const ast::HeadingStatement& heading) const;
+    std::string generateImage(const ast::ImageStatement& image) const;
+    std::string generateLink(const ast::LinkStatement& link) const;
     std::string generateButton(const ast::ButtonStatement& button) const;
 
     std::string generateClickJs(const ast::ButtonStatement& button) const;
