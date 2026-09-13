@@ -11,7 +11,7 @@
 ![Status](https://img.shields.io/badge/status-early%20development-orange?style=for-the-badge)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
 ![CMake](https://img.shields.io/badge/CMake-3.22%2B-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
-![License](https://img.shields.io/github/license/<your-username>/WebForge?style=for-the-badge)
+![License](https://img.shields.io/github/license/<Ombryal>/WebForge?style=for-the-badge)
 
 <br/>
 
