@@ -77,7 +77,8 @@ ast::TextStatement Parser::parseTextStatement() {
     );
 
     return ast::TextStatement{
-        .text = textToken.value
+        .text = textToken.value,
+        .style = parseStyleBlockIfPresent()
     };
 }
 
@@ -90,7 +91,8 @@ ast::HeadingStatement Parser::parseHeadingStatement() {
     );
 
     return ast::HeadingStatement{
-        .text = textToken.value
+        .text = textToken.value,
+        .style = parseStyleBlockIfPresent()
     };
 }
 
@@ -109,7 +111,8 @@ ast::ImageStatement Parser::parseImageStatement() {
 
     return ast::ImageStatement{
         .src = srcToken.value,
-        .altText = altToken.value
+        .altText = altToken.value,
+        .style = parseStyleBlockIfPresent()
     };
 }
 
@@ -126,9 +129,16 @@ ast::LinkStatement Parser::parseLinkStatement() {
         "Expected link href string after link label."
     );
 
+    std::string target;
+    if (check(TokenType::String)) {
+        target = advance().value;
+    }
+
     return ast::LinkStatement{
         .label = labelToken.value,
-        .href = hrefToken.value
+        .href = hrefToken.value,
+        .target = target,
+        .style = parseStyleBlockIfPresent()
     };
 }
 
@@ -149,7 +159,11 @@ ast::ButtonStatement Parser::parseButtonStatement() {
     button.label = labelToken.value;
 
     while (!check(TokenType::RightBrace) && !isAtEnd()) {
-        button.handlers.push_back(parseEventHandler());
+        if (check(TokenType::String)) {
+            button.style.push_back(parseStyleProperty());
+        } else {
+            button.handlers.push_back(parseEventHandler());
+        }
     }
 
     consume(
@@ -218,6 +232,11 @@ ast::ListStatement Parser::parseListStatement() {
     ast::ListStatement list;
 
     while (!check(TokenType::RightBrace) && !isAtEnd()) {
+        if (check(TokenType::String)) {
+            list.style.push_back(parseStyleProperty());
+            continue;
+        }
+
         consume(TokenType::KeywordItem, "Expected 'item' inside list block.");
 
         Token itemToken = consume(
@@ -240,6 +259,11 @@ ast::ContainerStatement Parser::parseContainerStatement() {
     ast::ContainerStatement container;
 
     while (!check(TokenType::RightBrace) && !isAtEnd()) {
+        if (check(TokenType::String)) {
+            container.style.push_back(parseStyleProperty());
+            continue;
+        }
+
         container.children.push_back(parseContainerChild());
     }
 
@@ -292,6 +316,41 @@ ast::ContainerChild Parser::parseContainerChild() {
         std::to_string(token.column) +
         "."
     );
+}
+
+ast::StyleProperties Parser::parseStyleBlockIfPresent() {
+    if (!check(TokenType::LeftBrace)) {
+        return {};
+    }
+
+    consume(TokenType::LeftBrace, "Expected '{' to start style block.");
+
+    ast::StyleProperties style;
+
+    while (!check(TokenType::RightBrace) && !isAtEnd()) {
+        style.push_back(parseStyleProperty());
+    }
+
+    consume(TokenType::RightBrace, "Expected '}' to close style block.");
+
+    return style;
+}
+
+ast::StyleProperty Parser::parseStyleProperty() {
+    Token nameToken = consume(
+        TokenType::String,
+        "Expected style property name string."
+    );
+
+    Token valueToken = consume(
+        TokenType::String,
+        "Expected style property value string after '" + nameToken.value + "'."
+    );
+
+    return ast::StyleProperty{
+        .name = nameToken.value,
+        .value = valueToken.value
+    };
 }
 
 bool Parser::match(TokenType type) {
