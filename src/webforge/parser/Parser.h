@@ -32,6 +32,8 @@ private:
     ast::ListStatement parseListStatement();
     ast::ContainerStatement parseContainerStatement();
     ast::ContainerChild parseContainerChild();
+    ast::StyleProperties parseStyleBlockIfPresent();
+    ast::StyleProperty parseStyleProperty();
 
     bool match(TokenType type);
     bool check(TokenType type) const;
