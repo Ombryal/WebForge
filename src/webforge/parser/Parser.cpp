@@ -50,9 +50,17 @@ ast::Statement Parser::parseStatement() {
         return parseButtonStatement();
     }
 
+    if (check(TokenType::KeywordList)) {
+        return parseListStatement();
+    }
+
+    if (check(TokenType::KeywordContainer)) {
+        return parseContainerStatement();
+    }
+
     Token token = peek();
     throw ParseError(
-        "Expected statement such as 'text', 'heading', 'image', 'link', or 'button' at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', or 'container' at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +
@@ -201,6 +209,89 @@ ast::Action Parser::parseAction() {
     return ast::AlertAction{
         .message = messageToken.value
     };
+}
+
+ast::ListStatement Parser::parseListStatement() {
+    consume(TokenType::KeywordList, "Expected 'list' statement.");
+    consume(TokenType::LeftBrace, "Expected '{' after 'list'.");
+
+    ast::ListStatement list;
+
+    while (!check(TokenType::RightBrace) && !isAtEnd()) {
+        consume(TokenType::KeywordItem, "Expected 'item' inside list block.");
+
+        Token itemToken = consume(
+            TokenType::String,
+            "Expected string after 'item'."
+        );
+
+        list.items.push_back(itemToken.value);
+    }
+
+    consume(TokenType::RightBrace, "Expected '}' to close list block.");
+
+    return list;
+}
+
+ast::ContainerStatement Parser::parseContainerStatement() {
+    consume(TokenType::KeywordContainer, "Expected 'container' statement.");
+    consume(TokenType::LeftBrace, "Expected '{' after 'container'.");
+
+    ast::ContainerStatement container;
+
+    while (!check(TokenType::RightBrace) && !isAtEnd()) {
+        container.children.push_back(parseContainerChild());
+    }
+
+    consume(TokenType::RightBrace, "Expected '}' to close container block.");
+
+    return container;
+}
+
+ast::ContainerChild Parser::parseContainerChild() {
+    if (check(TokenType::KeywordText)) {
+        return parseTextStatement();
+    }
+
+    if (check(TokenType::KeywordHeading)) {
+        return parseHeadingStatement();
+    }
+
+    if (check(TokenType::KeywordImage)) {
+        return parseImageStatement();
+    }
+
+    if (check(TokenType::KeywordLink)) {
+        return parseLinkStatement();
+    }
+
+    if (check(TokenType::KeywordButton)) {
+        return parseButtonStatement();
+    }
+
+    if (check(TokenType::KeywordList)) {
+        return parseListStatement();
+    }
+
+    Token token = peek();
+
+    if (check(TokenType::KeywordContainer)) {
+        throw ParseError(
+            "Nested containers are not supported yet, at line " +
+            std::to_string(token.line) +
+            ", column " +
+            std::to_string(token.column) +
+            "."
+        );
+    }
+
+    throw ParseError(
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', or 'list' inside container at line " +
+        std::to_string(token.line) +
+        ", column " +
+        std::to_string(token.column) +
+        "."
+    );
 }
 
 bool Parser::match(TokenType type) {
