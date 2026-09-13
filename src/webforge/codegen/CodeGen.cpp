@@ -43,6 +43,10 @@ std::string HtmlGenerator::generateStatement(const ast::Statement& statement) co
             return generateLink(value);
         } else if constexpr (std::is_same_v<T, ast::ButtonStatement>) {
             return generateButton(value);
+        } else if constexpr (std::is_same_v<T, ast::ListStatement>) {
+            return generateList(value);
+        } else if constexpr (std::is_same_v<T, ast::ContainerStatement>) {
+            return generateContainer(value);
         } else {
             static_assert(!sizeof(T*), "Unhandled ast::Statement alternative in codegen");
         }
@@ -85,6 +89,52 @@ std::string HtmlGenerator::generateButton(const ast::ButtonStatement& button) co
     }
     out << ">" << escapeHtml(button.label) << "</button>\n";
     return out.str();
+}
+
+std::string HtmlGenerator::generateList(const ast::ListStatement& list) const {
+    std::ostringstream out;
+    out << "  <ul>\n";
+
+    for (const auto& item : list.items) {
+        out << "    <li>" << escapeHtml(item) << "</li>\n";
+    }
+
+    out << "  </ul>\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateContainer(const ast::ContainerStatement& container) const {
+    std::ostringstream out;
+    out << "  <div>\n";
+
+    for (const auto& child : container.children) {
+        out << generateContainerChild(child);
+    }
+
+    out << "  </div>\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateContainerChild(const ast::ContainerChild& child) const {
+    return std::visit([&](const auto& value) -> std::string {
+        using T = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<T, ast::TextStatement>) {
+            return generateText(value);
+        } else if constexpr (std::is_same_v<T, ast::HeadingStatement>) {
+            return generateHeading(value);
+        } else if constexpr (std::is_same_v<T, ast::ImageStatement>) {
+            return generateImage(value);
+        } else if constexpr (std::is_same_v<T, ast::LinkStatement>) {
+            return generateLink(value);
+        } else if constexpr (std::is_same_v<T, ast::ButtonStatement>) {
+            return generateButton(value);
+        } else if constexpr (std::is_same_v<T, ast::ListStatement>) {
+            return generateList(value);
+        } else {
+            static_assert(!sizeof(T*), "Unhandled ast::ContainerChild alternative in codegen");
+        }
+    }, child);
 }
 
 std::string HtmlGenerator::generateClickJs(const ast::ButtonStatement& button) const {
