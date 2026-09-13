@@ -191,14 +191,68 @@ void testCodegenEscapesSpecialCharacters() {
     assert(html.find("&lt;script&gt;") != std::string::npos);
 }
 
+void testParserBasicElements() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "heading \"Welcome\"\n"
+        "image \"cat.png\" \"A cat\"\n"
+        "link \"Docs\" \"https://example.com\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 3);
+
+    const ast::HeadingStatement* heading =
+        std::get_if<ast::HeadingStatement>(&page.statements[0]);
+    assert(heading != nullptr);
+    assert(heading->text == "Welcome");
+
+    const ast::ImageStatement* image =
+        std::get_if<ast::ImageStatement>(&page.statements[1]);
+    assert(image != nullptr);
+    assert(image->src == "cat.png");
+    assert(image->altText == "A cat");
+
+    const ast::LinkStatement* link =
+        std::get_if<ast::LinkStatement>(&page.statements[2]);
+    assert(link != nullptr);
+    assert(link->label == "Docs");
+    assert(link->href == "https://example.com");
+}
+
+void testCodegenBasicElements() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "heading \"Welcome\"\n"
+        "image \"cat.png\" \"A cat\"\n"
+        "link \"Docs\" \"https://example.com\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<h1>Welcome</h1>") != std::string::npos);
+    assert(html.find("<img src=\"cat.png\" alt=\"A cat\">") != std::string::npos);
+    assert(html.find("<a href=\"https://example.com\">Docs</a>") != std::string::npos);
+}
+
 int main() {
     testLexerBasicPage();
     testLexerButtonProgram();
     testParserBasicPage();
     testParserButtonProgram();
+    testParserBasicElements();
     testCodegenBasicPage();
     testCodegenButtonProgram();
     testCodegenEscapesSpecialCharacters();
+    testCodegenBasicElements();
 
     std::cout << "All tests passed\n";
     return 0;
