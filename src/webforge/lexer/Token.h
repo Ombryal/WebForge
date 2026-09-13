@@ -18,6 +18,9 @@ enum class TokenType {
     KeywordHeading,
     KeywordImage,
     KeywordLink,
+    KeywordContainer,
+    KeywordList,
+    KeywordItem,
 
     // Literals and identifiers
     Identifier,
