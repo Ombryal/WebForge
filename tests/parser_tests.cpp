@@ -252,3 +252,28 @@ void testParserLinkTarget() {
     assert(link != nullptr);
     assert(link->target == "_blank");
 }
+
+void testParserStylesheetAndMeta() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "stylesheet \"styles.css\"\n"
+        "meta \"description\" \"A test page.\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 2);
+
+    const ast::StylesheetStatement* stylesheet =
+        std::get_if<ast::StylesheetStatement>(&page.statements[0]);
+    assert(stylesheet != nullptr);
+    assert(stylesheet->href == "styles.css");
+
+    const ast::MetaStatement* meta =
+        std::get_if<ast::MetaStatement>(&page.statements[1]);
+    assert(meta != nullptr);
+    assert(meta->name == "description");
+    assert(meta->content == "A test page.");
+}

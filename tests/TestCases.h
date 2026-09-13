@@ -19,6 +19,7 @@ void testParserRejectsNestedContainer();
 void testParserStyleOnLeafStatement();
 void testParserStyleInsideButtonAndContainer();
 void testParserLinkTarget();
+void testParserStylesheetAndMeta();
 
 // --- Codegen ---
 void testCodegenBasicPage();
@@ -28,3 +29,5 @@ void testCodegenBasicElements();
 void testCodegenListAndContainer();
 void testCodegenInlineStyle();
 void testCodegenLinkTargetAndRel();
+void testCodegenStylesheetAndMeta();
+void testCodegenIdAndClassAttributes();

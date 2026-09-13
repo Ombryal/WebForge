@@ -76,6 +76,17 @@ struct ContainerStatement {
     StyleProperties style;
 };
 
+// Page-level only: emitted into <head>, not valid inside a container.
+struct StylesheetStatement {
+    std::string href;
+};
+
+// Page-level only: emitted into <head>, not valid inside a container.
+struct MetaStatement {
+    std::string name;
+    std::string content;
+};
+
 using Statement = std::variant<
     TextStatement,
     HeadingStatement,
@@ -83,7 +94,9 @@ using Statement = std::variant<
     LinkStatement,
     ButtonStatement,
     ListStatement,
-    ContainerStatement>;
+    ContainerStatement,
+    StylesheetStatement,
+    MetaStatement>;
 
 struct Page {
     std::string title;

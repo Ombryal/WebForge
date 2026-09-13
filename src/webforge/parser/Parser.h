@@ -34,6 +34,8 @@ private:
     ast::ContainerChild parseContainerChild();
     ast::StyleProperties parseStyleBlockIfPresent();
     ast::StyleProperty parseStyleProperty();
+    ast::StylesheetStatement parseStylesheetStatement();
+    ast::MetaStatement parseMetaStatement();
 
     bool match(TokenType type);
     bool check(TokenType type) const;
