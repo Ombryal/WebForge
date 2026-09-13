@@ -17,6 +17,7 @@ public:
 
 private:
     std::string generateStatement(const ast::Statement& statement) const;
+    std::string generateHeadExtra(const ast::Statement& statement) const;
     std::string generateText(const ast::TextStatement& text) const;
     std::string generateHeading(const ast::HeadingStatement& heading) const;
     std::string generateImage(const ast::ImageStatement& image) const;
@@ -25,11 +26,14 @@ private:
     std::string generateList(const ast::ListStatement& list) const;
     std::string generateContainer(const ast::ContainerStatement& container) const;
     std::string generateContainerChild(const ast::ContainerChild& child) const;
+    std::string generateStylesheet(const ast::StylesheetStatement& stylesheet) const;
+    std::string generateMeta(const ast::MetaStatement& meta) const;
 
     std::string generateClickJs(const ast::ButtonStatement& button) const;
     std::string generateActionJs(const ast::Action& action) const;
 
-    static std::string buildStyleAttribute(const ast::StyleProperties& style);
+    static std::string buildElementAttributes(const ast::StyleProperties& style);
+    static std::string buildStyleAttribute(const ast::StyleProperties& remainingStyle);
     static std::string escapeHtml(const std::string& input);
     static std::string escapeJsString(const std::string& input);
 
