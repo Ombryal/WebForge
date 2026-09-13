@@ -10,6 +10,14 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
+# Core compiler library
+add_library(webforge_lib STATIC
+    src/webforge/lexer/Lexer.cpp
+)
+target_include_directories(webforge_lib PUBLIC src)
+
+# CLI executable
 add_executable(webforge
     src/main.cpp
 )
+target_link_libraries(webforge PRIVATE webforge_lib)
