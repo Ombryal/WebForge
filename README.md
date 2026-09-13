@@ -168,7 +168,7 @@ WebForge/
 ## 🛠️ Build
 
 ```bash
-git clone https://github.com/<your-username>/WebForge.git
+git clone https://github.com/Ombryal/WebForge.git
 cd WebForge
 
 cmake -S . -B build
@@ -231,9 +231,9 @@ See [`LICENSE`](LICENSE).
 
 **Forge the web.**
 
-[⭐ Star](https://github.com/<your-username>/WebForge)
+[⭐ Star](https://github.com/Ombryal/WebForge)
 &nbsp; • &nbsp;
-[🐛 Issues](https://github.com/<your-username>/WebForge/issues)
+[🐛 Issues](https://github.com/Ombryal/WebForge/issues)
 &nbsp; • &nbsp;
 [📖 Docs](docs/language.md)
 
