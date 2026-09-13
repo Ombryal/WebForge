@@ -58,9 +58,17 @@ ast::Statement Parser::parseStatement() {
         return parseContainerStatement();
     }
 
+    if (check(TokenType::KeywordStylesheet)) {
+        return parseStylesheetStatement();
+    }
+
+    if (check(TokenType::KeywordMeta)) {
+        return parseMetaStatement();
+    }
+
     Token token = peek();
     throw ParseError(
-        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', or 'container' at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', 'container', 'stylesheet', or 'meta' at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +
@@ -350,6 +358,38 @@ ast::StyleProperty Parser::parseStyleProperty() {
     return ast::StyleProperty{
         .name = nameToken.value,
         .value = valueToken.value
+    };
+}
+
+ast::StylesheetStatement Parser::parseStylesheetStatement() {
+    consume(TokenType::KeywordStylesheet, "Expected 'stylesheet' statement.");
+
+    Token hrefToken = consume(
+        TokenType::String,
+        "Expected stylesheet path string after 'stylesheet'."
+    );
+
+    return ast::StylesheetStatement{
+        .href = hrefToken.value
+    };
+}
+
+ast::MetaStatement Parser::parseMetaStatement() {
+    consume(TokenType::KeywordMeta, "Expected 'meta' statement.");
+
+    Token nameToken = consume(
+        TokenType::String,
+        "Expected meta name string after 'meta'."
+    );
+
+    Token contentToken = consume(
+        TokenType::String,
+        "Expected meta content string after meta name."
+    );
+
+    return ast::MetaStatement{
+        .name = nameToken.value,
+        .content = contentToken.value
     };
 }
 
