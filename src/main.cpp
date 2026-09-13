@@ -1,41 +1,82 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
-#include <string>
-#include <vector>
 #include <stdexcept>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <variant>
+#include <vector>
 
 #include "webforge/lexer/Lexer.h"
+#include "webforge/parser/Parser.h"
 
 std::string readFile(const std::string& path) {
     std::ifstream file(path);
     if (!file.is_open()) {
         throw std::runtime_error("Could not open file: " + path);
     }
+
     std::stringstream buffer;
     buffer << file.rdbuf();
     return buffer.str();
 }
 
-std::string tokenTypeToString(webforge::TokenType type) {
-    switch (type) {
-        case webforge::TokenType::Eof: return "Eof";
-        case webforge::TokenType::Unknown: return "Unknown";
-        case webforge::TokenType::KeywordPage: return "KeywordPage";
-        case webforge::TokenType::KeywordText: return "KeywordText";
-        case webforge::TokenType::KeywordButton: return "KeywordButton";
-        case webforge::TokenType::KeywordOn: return "KeywordOn";
-        case webforge::TokenType::KeywordClick: return "KeywordClick";
-        case webforge::TokenType::KeywordAlert: return "KeywordAlert";
-        case webforge::TokenType::Identifier: return "Identifier";
-        case webforge::TokenType::String: return "String";
-        case webforge::TokenType::LeftBrace: return "LeftBrace";
-        case webforge::TokenType::RightBrace: return "RightBrace";
-        case webforge::TokenType::LeftParen: return "LeftParen";
-        case webforge::TokenType::RightParen: return "RightParen";
-        case webforge::TokenType::Comma: return "Comma";
+void printIndent(int indent) {
+    std::cout << std::string(static_cast<std::size_t>(indent) * 2, ' ');
+}
+
+void printAction(const webforge::ast::Action& action, int indent) {
+    std::visit([&](const auto& value) {
+        using T = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<T, webforge::ast::AlertAction>) {
+            printIndent(indent);
+            std::cout << "alert(\"" << value.message << "\")\n";
+        }
+    }, action);
+}
+
+void printEventHandler(const webforge::ast::EventHandler& handler, int indent) {
+    printIndent(indent);
+    std::cout << "on " << handler.eventName << " {\n";
+
+    for (const auto& action : handler.actions) {
+        printAction(action, indent + 1);
     }
-    return "Unknown";
+
+    printIndent(indent);
+    std::cout << "}\n";
+}
+
+void printStatement(const webforge::ast::Statement& statement, int indent) {
+    std::visit([&](const auto& value) {
+        using T = std::decay_t<decltype(value)>;
+
+        if constexpr (std::is_same_v<T, webforge::ast::TextStatement>) {
+            printIndent(indent);
+            std::cout << "text \"" << value.text << "\"\n";
+        } else if constexpr (std::is_same_v<T, webforge::ast::ButtonStatement>) {
+            printIndent(indent);
+            std::cout << "button \"" << value.label << "\" {\n";
+
+            for (const auto& handler : value.handlers) {
+                printEventHandler(handler, indent + 1);
+            }
+
+            printIndent(indent);
+            std::cout << "}\n";
+        }
+    }, statement);
+}
+
+void printPage(const webforge::ast::Page& page) {
+    std::cout << "page \"" << page.title << "\"\n";
+    std::cout << "\n";
+
+    for (const auto& statement : page.statements) {
+        printStatement(statement, 0);
+    }
 }
 
 int main(int argc, char* argv[]) {
@@ -48,18 +89,16 @@ int main(int argc, char* argv[]) {
 
     try {
         std::string source = readFile(inputPath);
+
         webforge::Lexer lexer(source);
         std::vector<webforge::Token> tokens = lexer.tokenize();
 
-        std::cout << "Successfully lexed " << inputPath << ":\n\n";
-        for (const auto& token : tokens) {
-            std::cout << "[" << token.line << ":" << token.column << "] "
-                      << tokenTypeToString(token.type);
-            if (!token.value.empty()) {
-                std::cout << " -> \"" << token.value << "\"";
-            }
-            std::cout << "\n";
-        }
+        webforge::Parser parser(std::move(tokens));
+        webforge::ast::Page page = parser.parse();
+
+        printPage(page);
+
+        std::cout << "\nParse OK\n";
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << "\n";
         return 1;
