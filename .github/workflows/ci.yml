@@ -25,6 +25,9 @@ jobs:
           -Wextra
           -Isrc
           tests/compiler_tests.cpp
+          tests/lexer_tests.cpp
+          tests/parser_tests.cpp
+          tests/codegen_tests.cpp
           src/webforge/lexer/Lexer.cpp
           src/webforge/parser/Parser.cpp
           src/webforge/codegen/CodeGen.cpp
