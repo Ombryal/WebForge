@@ -1,0 +1,40 @@
+# Build output
+build/
+out/
+dist/
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+Testing/
+compile_commands.json
+CMakeUserPresets.json
+
+# Make/Ninja
+Makefile
+build.ninja
+.ninja_deps
+.ninja_log
+
+# Compiled files
+*.o
+*.obj
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Executables
+webforge
+webforge.exe
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
