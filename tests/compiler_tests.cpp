@@ -4,6 +4,7 @@
 #include <variant>
 #include <vector>
 
+#include "webforge/codegen/CodeGen.h"
 #include "webforge/lexer/Lexer.h"
 #include "webforge/parser/Parser.h"
 
@@ -134,11 +135,70 @@ void testParserButtonProgram() {
     assert(alert->message == "Hi");
 }
 
+void testCodegenBasicPage() {
+    std::string source =
+        "page \"Hello World\"\n"
+        "\n"
+        "text \"Hello, world!\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<title>Hello World</title>") != std::string::npos);
+    assert(html.find("<p>Hello, world!</p>") != std::string::npos);
+}
+
+void testCodegenButtonProgram() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "button \"Click me\" {\n"
+        "    on click {\n"
+        "        alert(\"Hi\")\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find(">Click me</button>") != std::string::npos);
+    assert(html.find("onclick=\"alert(&#39;Hi&#39;);\"") != std::string::npos);
+}
+
+void testCodegenEscapesSpecialCharacters() {
+    std::string source =
+        "page \"A & B\"\n"
+        "\n"
+        "text \"<script>alert('x')</script>\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<title>A &amp; B</title>") != std::string::npos);
+    assert(html.find("<script>alert") == std::string::npos);
+    assert(html.find("&lt;script&gt;") != std::string::npos);
+}
+
 int main() {
     testLexerBasicPage();
     testLexerButtonProgram();
     testParserBasicPage();
     testParserButtonProgram();
+    testCodegenBasicPage();
+    testCodegenButtonProgram();
+    testCodegenEscapesSpecialCharacters();
 
     std::cout << "All tests passed\n";
     return 0;
