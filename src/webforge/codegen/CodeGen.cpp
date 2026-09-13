@@ -35,6 +35,12 @@ std::string HtmlGenerator::generateStatement(const ast::Statement& statement) co
 
         if constexpr (std::is_same_v<T, ast::TextStatement>) {
             return generateText(value);
+        } else if constexpr (std::is_same_v<T, ast::HeadingStatement>) {
+            return generateHeading(value);
+        } else if constexpr (std::is_same_v<T, ast::ImageStatement>) {
+            return generateImage(value);
+        } else if constexpr (std::is_same_v<T, ast::LinkStatement>) {
+            return generateLink(value);
         } else if constexpr (std::is_same_v<T, ast::ButtonStatement>) {
             return generateButton(value);
         } else {
@@ -46,6 +52,26 @@ std::string HtmlGenerator::generateStatement(const ast::Statement& statement) co
 std::string HtmlGenerator::generateText(const ast::TextStatement& text) const {
     std::ostringstream out;
     out << "  <p>" << escapeHtml(text.text) << "</p>\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateHeading(const ast::HeadingStatement& heading) const {
+    std::ostringstream out;
+    out << "  <h1>" << escapeHtml(heading.text) << "</h1>\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateImage(const ast::ImageStatement& image) const {
+    std::ostringstream out;
+    out << "  <img src=\"" << escapeHtml(image.src) << "\""
+        << " alt=\"" << escapeHtml(image.altText) << "\">\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateLink(const ast::LinkStatement& link) const {
+    std::ostringstream out;
+    out << "  <a href=\"" << escapeHtml(link.href) << "\">"
+        << escapeHtml(link.label) << "</a>\n";
     return out.str();
 }
 
