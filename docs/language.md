@@ -134,11 +134,53 @@ Property names and values are plain strings — there's no validation that
 they're real CSS yet, so a typo like `"colr"` will compile silently and just
 have no visual effect in the browser.
 
+Two property names are special-cased: `"id"` and `"class"` are pulled out of
+the style block and rendered as their own `id`/`class` attributes instead of
+going into the inline `style`.
+
+    text "Styled" {
+        "id" "intro"
+        "class" "lead"
+        "color" "blue"
+    }
+
+Compiles to:
+
+    <p id="intro" class="lead" style="color:blue;">Styled</p>
+
+If `"class"` appears more than once, the values are space-joined into one
+`class` attribute. If `"id"` appears more than once, only the first is used.
+
+## stylesheet
+
+A page-level statement linking an external CSS file. WebForge doesn't
+generate CSS files itself yet — this just references one you maintain by
+hand, which is what makes `class` above actually useful.
+
+    stylesheet "styles.css"
+
+Compiles to, inside `<head>`:
+
+    <link rel="stylesheet" href="styles.css">
+
+## meta
+
+A page-level statement for an HTML `<meta>` tag, e.g. for SEO.
+
+    meta "description" "A page built with WebForge."
+
+Compiles to, inside `<head>`:
+
+    <meta name="description" content="A page built with WebForge.">
+
+`stylesheet` and `meta` are page-level only — neither is valid inside a
+`container`.
+
 ## Planned next additions
 
 Not implemented yet:
 
-- CSS class names / a real stylesheet system (inline styles only, for now)
+- WebForge-generated CSS (stylesheets are hand-written and only linked, for now)
 - Nested containers
 - Variables, conditionals, and loops
 - Multi-page projects and routing
