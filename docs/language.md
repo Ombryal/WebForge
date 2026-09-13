@@ -53,10 +53,15 @@ Arguments are source and alt text. Compiles to:
 ### link
 
     link "Docs" "https://example.com"
+    link "Docs" "https://example.com" "_blank"
 
-Arguments are label and href. Compiles to:
+Arguments are label, href, and an optional target. Compiles to:
 
     <a href="https://example.com">Docs</a>
+    <a href="https://example.com" target="_blank" rel="noopener noreferrer">Docs</a>
+
+The `rel="noopener noreferrer"` is added automatically whenever a target is
+given.
 
 ## list
 
@@ -101,11 +106,39 @@ Compiles to a `<div>` wrapping its children. A container can hold `text`,
 `container`. Nested containers aren't supported yet; that needs a recursive
 AST design that hasn't been introduced.
 
+## Inline styling
+
+Any of `text`, `heading`, `image`, `link`, `button`, `list`, or `container`
+can carry a trailing block of `"property" "value"` pairs, rendered as an
+inline `style` attribute.
+
+    text "Styled" {
+        "color" "blue"
+        "font-size" "20px"
+    }
+
+Compiles to:
+
+    <p style="color:blue; font-size:20px;">Styled</p>
+
+For `button`, `list`, and `container` — which already use `{ ... }` for
+event handlers, items, or children — style pairs can appear alongside those
+entries in any order:
+
+    container {
+        "background" "gray"
+        heading "Welcome"
+    }
+
+Property names and values are plain strings — there's no validation that
+they're real CSS yet, so a typo like `"colr"` will compile silently and just
+have no visual effect in the browser.
+
 ## Planned next additions
 
 Not implemented yet:
 
-- Inline or block-level styling (colors, spacing, fonts)
+- CSS class names / a real stylesheet system (inline styles only, for now)
 - Nested containers
 - Variables, conditionals, and loops
 - Multi-page projects and routing
