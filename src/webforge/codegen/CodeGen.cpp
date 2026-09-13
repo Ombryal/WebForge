@@ -55,26 +55,36 @@ std::string HtmlGenerator::generateStatement(const ast::Statement& statement) co
 
 std::string HtmlGenerator::generateText(const ast::TextStatement& text) const {
     std::ostringstream out;
-    out << "  <p>" << escapeHtml(text.text) << "</p>\n";
+    out << "  <p" << buildStyleAttribute(text.style) << ">"
+        << escapeHtml(text.text) << "</p>\n";
     return out.str();
 }
 
 std::string HtmlGenerator::generateHeading(const ast::HeadingStatement& heading) const {
     std::ostringstream out;
-    out << "  <h1>" << escapeHtml(heading.text) << "</h1>\n";
+    out << "  <h1" << buildStyleAttribute(heading.style) << ">"
+        << escapeHtml(heading.text) << "</h1>\n";
     return out.str();
 }
 
 std::string HtmlGenerator::generateImage(const ast::ImageStatement& image) const {
     std::ostringstream out;
     out << "  <img src=\"" << escapeHtml(image.src) << "\""
-        << " alt=\"" << escapeHtml(image.altText) << "\">\n";
+        << " alt=\"" << escapeHtml(image.altText) << "\""
+        << buildStyleAttribute(image.style) << ">\n";
     return out.str();
 }
 
 std::string HtmlGenerator::generateLink(const ast::LinkStatement& link) const {
     std::ostringstream out;
-    out << "  <a href=\"" << escapeHtml(link.href) << "\">"
+    out << "  <a href=\"" << escapeHtml(link.href) << "\"";
+
+    if (!link.target.empty()) {
+        out << " target=\"" << escapeHtml(link.target) << "\""
+            << " rel=\"noopener noreferrer\"";
+    }
+
+    out << buildStyleAttribute(link.style) << ">"
         << escapeHtml(link.label) << "</a>\n";
     return out.str();
 }
@@ -87,13 +97,14 @@ std::string HtmlGenerator::generateButton(const ast::ButtonStatement& button) co
     if (!js.empty()) {
         out << " onclick=\"" << escapeHtml(js) << "\"";
     }
-    out << ">" << escapeHtml(button.label) << "</button>\n";
+    out << buildStyleAttribute(button.style) << ">"
+        << escapeHtml(button.label) << "</button>\n";
     return out.str();
 }
 
 std::string HtmlGenerator::generateList(const ast::ListStatement& list) const {
     std::ostringstream out;
-    out << "  <ul>\n";
+    out << "  <ul" << buildStyleAttribute(list.style) << ">\n";
 
     for (const auto& item : list.items) {
         out << "    <li>" << escapeHtml(item) << "</li>\n";
@@ -105,7 +116,7 @@ std::string HtmlGenerator::generateList(const ast::ListStatement& list) const {
 
 std::string HtmlGenerator::generateContainer(const ast::ContainerStatement& container) const {
     std::ostringstream out;
-    out << "  <div>\n";
+    out << "  <div" << buildStyleAttribute(container.style) << ">\n";
 
     for (const auto& child : container.children) {
         out << generateContainerChild(child);
@@ -165,6 +176,21 @@ std::string HtmlGenerator::generateActionJs(const ast::Action& action) const {
             static_assert(!sizeof(T*), "Unhandled ast::Action alternative in codegen");
         }
     }, action);
+}
+
+std::string HtmlGenerator::buildStyleAttribute(const ast::StyleProperties& style) {
+    if (style.empty()) {
+        return "";
+    }
+
+    std::ostringstream css;
+    for (const auto& property : style) {
+        css << property.name << ":" << property.value << ";";
+    }
+
+    std::ostringstream out;
+    out << " style=\"" << escapeHtml(css.str()) << "\"";
+    return out.str();
 }
 
 std::string HtmlGenerator::escapeHtml(const std::string& input) {

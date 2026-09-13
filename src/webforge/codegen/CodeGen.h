@@ -29,6 +29,7 @@ private:
     std::string generateClickJs(const ast::ButtonStatement& button) const;
     std::string generateActionJs(const ast::Action& action) const;
 
+    static std::string buildStyleAttribute(const ast::StyleProperties& style);
     static std::string escapeHtml(const std::string& input);
     static std::string escapeJsString(const std::string& input);
 

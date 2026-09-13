@@ -369,6 +369,117 @@ void testCodegenListAndContainer() {
     assert(html.find("</div>") != std::string::npos);
 }
 
+void testParserStyleOnLeafStatement() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "text \"Styled\" {\n"
+        "    \"color\" \"blue\"\n"
+        "    \"font-size\" \"20px\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    const ast::TextStatement* text =
+        std::get_if<ast::TextStatement>(&page.statements[0]);
+
+    assert(text != nullptr);
+    assert(text->style.size() == 2);
+    assert(text->style[0].name == "color");
+    assert(text->style[0].value == "blue");
+    assert(text->style[1].name == "font-size");
+    assert(text->style[1].value == "20px");
+}
+
+void testParserStyleInsideButtonAndContainer() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "container {\n"
+        "    \"background\" \"gray\"\n"
+        "    button \"Click me\" {\n"
+        "        \"color\" \"white\"\n"
+        "        on click {\n"
+        "            alert(\"Hi\")\n"
+        "        }\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    const ast::ContainerStatement* container =
+        std::get_if<ast::ContainerStatement>(&page.statements[0]);
+
+    assert(container != nullptr);
+    assert(container->style.size() == 1);
+    assert(container->style[0].name == "background");
+    assert(container->children.size() == 1);
+
+    const ast::ButtonStatement* button =
+        std::get_if<ast::ButtonStatement>(&container->children[0]);
+
+    assert(button != nullptr);
+    assert(button->style.size() == 1);
+    assert(button->style[0].name == "color");
+    assert(button->handlers.size() == 1);
+}
+
+void testParserLinkTarget() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "link \"Docs\" \"https://example.com\" \"_blank\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    const ast::LinkStatement* link =
+        std::get_if<ast::LinkStatement>(&page.statements[0]);
+
+    assert(link != nullptr);
+    assert(link->target == "_blank");
+}
+
+void testCodegenInlineStyle() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "text \"Styled\" {\n"
+        "    \"color\" \"blue\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("style=\"color:blue;\"") != std::string::npos);
+}
+
+void testCodegenLinkTargetAndRel() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "link \"Docs\" \"https://example.com\" \"_blank\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("target=\"_blank\"") != std::string::npos);
+    assert(html.find("rel=\"noopener noreferrer\"") != std::string::npos);
+}
+
 int main() {
     testLexerBasicPage();
     testLexerButtonProgram();
@@ -379,11 +490,16 @@ int main() {
     testParserListStatement();
     testParserContainerStatement();
     testParserRejectsNestedContainer();
+    testParserStyleOnLeafStatement();
+    testParserStyleInsideButtonAndContainer();
+    testParserLinkTarget();
     testCodegenBasicPage();
     testCodegenButtonProgram();
     testCodegenEscapesSpecialCharacters();
     testCodegenBasicElements();
     testCodegenListAndContainer();
+    testCodegenInlineStyle();
+    testCodegenLinkTargetAndRel();
 
     std::cout << "All tests passed\n";
     return 0;
