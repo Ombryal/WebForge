@@ -16,6 +16,7 @@ int main() {
     testParserStyleOnLeafStatement();
     testParserStyleInsideButtonAndContainer();
     testParserLinkTarget();
+    testParserStylesheetAndMeta();
 
     testCodegenBasicPage();
     testCodegenButtonProgram();
@@ -24,6 +25,8 @@ int main() {
     testCodegenListAndContainer();
     testCodegenInlineStyle();
     testCodegenLinkTargetAndRel();
+    testCodegenStylesheetAndMeta();
+    testCodegenIdAndClassAttributes();
 
     std::cout << "All tests passed\n";
     return 0;
