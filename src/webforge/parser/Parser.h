@@ -23,6 +23,9 @@ private:
     ast::Page parsePage();
     ast::Statement parseStatement();
     ast::TextStatement parseTextStatement();
+    ast::HeadingStatement parseHeadingStatement();
+    ast::ImageStatement parseImageStatement();
+    ast::LinkStatement parseLinkStatement();
     ast::ButtonStatement parseButtonStatement();
     ast::EventHandler parseEventHandler();
     ast::Action parseAction();

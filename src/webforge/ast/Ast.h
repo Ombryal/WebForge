@@ -10,6 +10,20 @@ struct TextStatement {
     std::string text;
 };
 
+struct HeadingStatement {
+    std::string text;
+};
+
+struct ImageStatement {
+    std::string src;
+    std::string altText;
+};
+
+struct LinkStatement {
+    std::string label;
+    std::string href;
+};
+
 struct AlertAction {
     std::string message;
 };
@@ -26,7 +40,12 @@ struct ButtonStatement {
     std::vector<EventHandler> handlers;
 };
 
-using Statement = std::variant<TextStatement, ButtonStatement>;
+using Statement = std::variant<
+    TextStatement,
+    HeadingStatement,
+    ImageStatement,
+    LinkStatement,
+    ButtonStatement>;
 
 struct Page {
     std::string title;

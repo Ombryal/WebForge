@@ -34,13 +34,25 @@ ast::Statement Parser::parseStatement() {
         return parseTextStatement();
     }
 
+    if (check(TokenType::KeywordHeading)) {
+        return parseHeadingStatement();
+    }
+
+    if (check(TokenType::KeywordImage)) {
+        return parseImageStatement();
+    }
+
+    if (check(TokenType::KeywordLink)) {
+        return parseLinkStatement();
+    }
+
     if (check(TokenType::KeywordButton)) {
         return parseButtonStatement();
     }
 
     Token token = peek();
     throw ParseError(
-        "Expected statement such as 'text' or 'button' at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', or 'button' at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +
@@ -58,6 +70,57 @@ ast::TextStatement Parser::parseTextStatement() {
 
     return ast::TextStatement{
         .text = textToken.value
+    };
+}
+
+ast::HeadingStatement Parser::parseHeadingStatement() {
+    consume(TokenType::KeywordHeading, "Expected 'heading' statement.");
+
+    Token textToken = consume(
+        TokenType::String,
+        "Expected string after 'heading'."
+    );
+
+    return ast::HeadingStatement{
+        .text = textToken.value
+    };
+}
+
+ast::ImageStatement Parser::parseImageStatement() {
+    consume(TokenType::KeywordImage, "Expected 'image' statement.");
+
+    Token srcToken = consume(
+        TokenType::String,
+        "Expected image source string after 'image'."
+    );
+
+    Token altToken = consume(
+        TokenType::String,
+        "Expected alt text string after image source."
+    );
+
+    return ast::ImageStatement{
+        .src = srcToken.value,
+        .altText = altToken.value
+    };
+}
+
+ast::LinkStatement Parser::parseLinkStatement() {
+    consume(TokenType::KeywordLink, "Expected 'link' statement.");
+
+    Token labelToken = consume(
+        TokenType::String,
+        "Expected link label string after 'link'."
+    );
+
+    Token hrefToken = consume(
+        TokenType::String,
+        "Expected link href string after link label."
+    );
+
+    return ast::LinkStatement{
+        .label = labelToken.value,
+        .href = hrefToken.value
     };
 }
 
