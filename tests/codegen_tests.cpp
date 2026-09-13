@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstddef>
 #include <string>
 
 #include "TestCases.h"
@@ -144,4 +145,70 @@ void testCodegenLinkTargetAndRel() {
 
     assert(html.find("target=\"_blank\"") != std::string::npos);
     assert(html.find("rel=\"noopener noreferrer\"") != std::string::npos);
+}
+
+void testCodegenStylesheetAndMeta() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "stylesheet \"styles.css\"\n"
+        "meta \"description\" \"A test page.\"\n"
+        "text \"Body copy\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    std::size_t headStart = html.find("<head>");
+    std::size_t headEnd = html.find("</head>");
+    std::size_t bodyStart = html.find("<body>");
+
+    assert(headStart != std::string::npos);
+    assert(headEnd != std::string::npos);
+    assert(bodyStart != std::string::npos);
+
+    std::size_t stylesheetPos = html.find(
+        "<link rel=\"stylesheet\" href=\"styles.css\">"
+    );
+    std::size_t metaPos = html.find(
+        "<meta name=\"description\" content=\"A test page.\">"
+    );
+
+    assert(stylesheetPos != std::string::npos);
+    assert(metaPos != std::string::npos);
+
+    // Both belong inside <head>, not <body>.
+    assert(stylesheetPos > headStart && stylesheetPos < headEnd);
+    assert(metaPos > headStart && metaPos < headEnd);
+
+    assert(html.find("<p>Body copy</p>") > bodyStart);
+}
+
+void testCodegenIdAndClassAttributes() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "text \"Styled\" {\n"
+        "    \"id\" \"intro\"\n"
+        "    \"class\" \"lead\"\n"
+        "    \"color\" \"blue\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("id=\"intro\"") != std::string::npos);
+    assert(html.find("class=\"lead\"") != std::string::npos);
+    assert(html.find("style=\"color:blue;\"") != std::string::npos);
+
+    // id/class must not leak into the inline style attribute.
+    assert(html.find("id:intro") == std::string::npos);
+    assert(html.find("class:lead") == std::string::npos);
 }
