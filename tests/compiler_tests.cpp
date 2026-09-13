@@ -243,16 +243,147 @@ void testCodegenBasicElements() {
     assert(html.find("<a href=\"https://example.com\">Docs</a>") != std::string::npos);
 }
 
+void testParserListStatement() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "list {\n"
+        "    item \"One\"\n"
+        "    item \"Two\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 1);
+
+    const ast::ListStatement* list =
+        std::get_if<ast::ListStatement>(&page.statements[0]);
+
+    assert(list != nullptr);
+    assert(list->items.size() == 2);
+    assert(list->items[0] == "One");
+    assert(list->items[1] == "Two");
+}
+
+void testParserContainerStatement() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "container {\n"
+        "    heading \"Welcome\"\n"
+        "    text \"Body copy\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 1);
+
+    const ast::ContainerStatement* container =
+        std::get_if<ast::ContainerStatement>(&page.statements[0]);
+
+    assert(container != nullptr);
+    assert(container->children.size() == 2);
+
+    const ast::HeadingStatement* heading =
+        std::get_if<ast::HeadingStatement>(&container->children[0]);
+    assert(heading != nullptr);
+    assert(heading->text == "Welcome");
+
+    const ast::TextStatement* text =
+        std::get_if<ast::TextStatement>(&container->children[1]);
+    assert(text != nullptr);
+    assert(text->text == "Body copy");
+}
+
+void testParserRejectsNestedContainer() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "container {\n"
+        "    container {\n"
+        "        text \"Nested\"\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+
+    bool threw = false;
+    try {
+        parser.parse();
+    } catch (const ParseError&) {
+        threw = true;
+    }
+
+    assert(threw);
+}
+
+void testLexerSkipsComments() {
+    std::string source =
+        "page \"Hello\" // page title\n"
+        "\n"
+        "// a comment on its own line\n"
+        "text \"Hello, world!\"\n";
+
+    Lexer lexer(source);
+    std::vector<Token> tokens = lexer.tokenize();
+
+    assert(tokens.size() == 5);
+    assert(tokens[0].type == TokenType::KeywordPage);
+    assert(tokens[1].type == TokenType::String);
+    assert(tokens[1].value == "Hello");
+    assert(tokens[2].type == TokenType::KeywordText);
+    assert(tokens[3].type == TokenType::String);
+    assert(tokens[3].value == "Hello, world!");
+    assert(tokens[4].type == TokenType::Eof);
+}
+
+void testCodegenListAndContainer() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "container {\n"
+        "    heading \"Welcome\"\n"
+        "    list {\n"
+        "        item \"One\"\n"
+        "        item \"Two\"\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<div>") != std::string::npos);
+    assert(html.find("<h1>Welcome</h1>") != std::string::npos);
+    assert(html.find("<ul>") != std::string::npos);
+    assert(html.find("<li>One</li>") != std::string::npos);
+    assert(html.find("<li>Two</li>") != std::string::npos);
+    assert(html.find("</div>") != std::string::npos);
+}
+
 int main() {
     testLexerBasicPage();
     testLexerButtonProgram();
+    testLexerSkipsComments();
     testParserBasicPage();
     testParserButtonProgram();
     testParserBasicElements();
+    testParserListStatement();
+    testParserContainerStatement();
+    testParserRejectsNestedContainer();
     testCodegenBasicPage();
     testCodegenButtonProgram();
     testCodegenEscapesSpecialCharacters();
     testCodegenBasicElements();
+    testCodegenListAndContainer();
 
     std::cout << "All tests passed\n";
     return 0;

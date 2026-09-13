@@ -48,11 +48,20 @@ char Lexer::peek() const {
 void Lexer::skipWhitespace() {
     while (!isAtEnd()) {
         char c = peek();
+
         if (std::isspace(static_cast<unsigned char>(c))) {
             advance();
-        } else {
-            break;
+            continue;
         }
+
+        if (c == '/' && position_ + 1 < source_.length() && source_[position_ + 1] == '/') {
+            while (!isAtEnd() && peek() != '\n') {
+                advance();
+            }
+            continue;
+        }
+
+        break;
     }
 }
 

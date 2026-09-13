@@ -29,6 +29,9 @@ private:
     ast::ButtonStatement parseButtonStatement();
     ast::EventHandler parseEventHandler();
     ast::Action parseAction();
+    ast::ListStatement parseListStatement();
+    ast::ContainerStatement parseContainerStatement();
+    ast::ContainerChild parseContainerChild();
 
     bool match(TokenType type);
     bool check(TokenType type) const;

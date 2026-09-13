@@ -40,12 +40,33 @@ struct ButtonStatement {
     std::vector<EventHandler> handlers;
 };
 
+struct ListStatement {
+    std::vector<std::string> items;
+};
+
+// What a container is allowed to hold. Deliberately excludes ContainerStatement
+// itself for now — nested containers aren't supported yet, since a container
+// holding itself needs a recursive-variant design we haven't introduced.
+using ContainerChild = std::variant<
+    TextStatement,
+    HeadingStatement,
+    ImageStatement,
+    LinkStatement,
+    ButtonStatement,
+    ListStatement>;
+
+struct ContainerStatement {
+    std::vector<ContainerChild> children;
+};
+
 using Statement = std::variant<
     TextStatement,
     HeadingStatement,
     ImageStatement,
     LinkStatement,
-    ButtonStatement>;
+    ButtonStatement,
+    ListStatement,
+    ContainerStatement>;
 
 struct Page {
     std::string title;
