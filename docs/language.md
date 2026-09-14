@@ -1,7 +1,7 @@
 # WebForge Language Notes
 
 This document describes the current WebForge language surface. It grows as
-the compiler grows — everything below is implemented and covered by tests
+the compiler grows, everything below is implemented and covered by tests
 unless marked otherwise.
 
 ## page
@@ -102,9 +102,24 @@ Groups other statements together.
     }
 
 Compiles to a `<div>` wrapping its children. A container can hold `text`,
-`heading`, `image`, `link`, `button`, and `list` — **not** another
-`container`. Nested containers aren't supported yet; that needs a recursive
-AST design that hasn't been introduced.
+`heading`, `image`, `link`, `button`, `list`, and another `container`, to
+any depth:
+
+    container {
+        heading "Outer"
+        container {
+            text "Inner"
+        }
+    }
+
+Compiles to:
+
+    <div>
+      <h1>Outer</h1>
+      <div>
+        <p>Inner</p>
+      </div>
+    </div>
 
 ## Inline styling
 
@@ -181,6 +196,5 @@ Compiles to, inside `<head>`:
 Not implemented yet:
 
 - WebForge-generated CSS (stylesheets are hand-written and only linked, for now)
-- Nested containers
 - Variables, conditionals, and loops
 - Multi-page projects and routing
