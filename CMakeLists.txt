@@ -14,6 +14,7 @@ endif()
 add_library(webforge_lib STATIC
     src/webforge/lexer/Lexer.cpp
     src/webforge/parser/Parser.cpp
+    src/webforge/parser/ParserStatements.cpp
     src/webforge/codegen/CodeGen.cpp
 )
 target_include_directories(webforge_lib PUBLIC src)
