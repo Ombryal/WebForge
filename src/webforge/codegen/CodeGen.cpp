@@ -164,6 +164,8 @@ std::string HtmlGenerator::generateContainerChild(const ast::ContainerChild& chi
             return generateButton(value);
         } else if constexpr (std::is_same_v<T, ast::ListStatement>) {
             return generateList(value);
+        } else if constexpr (std::is_same_v<T, ast::Box<ast::ContainerStatement>>) {
+            return generateContainer(*value);
         } else {
             static_assert(!sizeof(T*), "Unhandled ast::ContainerChild alternative in codegen");
         }
