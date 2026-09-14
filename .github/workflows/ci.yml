@@ -30,6 +30,7 @@ jobs:
           tests/codegen_tests.cpp
           src/webforge/lexer/Lexer.cpp
           src/webforge/parser/Parser.cpp
+          src/webforge/parser/ParserStatements.cpp
           src/webforge/codegen/CodeGen.cpp
           -o build/compiler_tests
 
