@@ -1,5 +1,6 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <vector>
 #include <variant>
@@ -60,16 +61,54 @@ struct ListStatement {
     StyleProperties style;
 };
 
-// What a container is allowed to hold. Deliberately excludes ContainerStatement
-// itself for now — nested containers aren't supported yet, since a container
-// holding itself needs a recursive-variant design we haven't introduced.
+struct ContainerStatement;
+
+// A heap-boxed, copyable holder for a value of type T. Exists to break the
+// recursive-size cycle between ContainerStatement and ContainerChild: a
+// container can now hold another container, but std::variant needs every
+// alternative to be a complete, fixed-size type, and a container holding
+// itself by value would be infinitely large. Boxing the recursive case in a
+// unique_ptr gives it a fixed size (that of a pointer) while still behaving
+// like a normal value — copyable, with *box / box-> access. Constructors
+// take T by reference rather than by value specifically so Box<T> stays
+// well-formed while T (ContainerStatement) is still an incomplete type,
+// which it is at the point ContainerChild is declared below.
+template <typename T>
+class Box {
+public:
+    explicit Box(const T& value) : value_(std::make_unique<T>(value)) {}
+    explicit Box(T&& value) : value_(std::make_unique<T>(std::move(value))) {}
+    Box(const Box& other) : value_(std::make_unique<T>(*other.value_)) {}
+    Box(Box&& other) noexcept = default;
+
+    Box& operator=(const Box& other) {
+        value_ = std::make_unique<T>(*other.value_);
+        return *this;
+    }
+    Box& operator=(Box&& other) noexcept = default;
+
+    ~Box() = default;
+
+    T& operator*() { return *value_; }
+    const T& operator*() const { return *value_; }
+    T* operator->() { return value_.get(); }
+    const T* operator->() const { return value_.get(); }
+
+private:
+    std::unique_ptr<T> value_;
+};
+
+// What a container is allowed to hold. A nested container is boxed (see
+// Box<T> above), so a container can now contain another container, to
+// arbitrary depth.
 using ContainerChild = std::variant<
     TextStatement,
     HeadingStatement,
     ImageStatement,
     LinkStatement,
     ButtonStatement,
-    ListStatement>;
+    ListStatement,
+    Box<ContainerStatement>>;
 
 struct ContainerStatement {
     std::vector<ContainerChild> children;

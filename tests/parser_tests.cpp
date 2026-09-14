@@ -154,27 +154,59 @@ void testParserContainerStatement() {
     assert(text->text == "Body copy");
 }
 
-void testParserRejectsNestedContainer() {
+void testParserNestedContainers() {
     std::string source =
         "page \"Hello\"\n"
         "\n"
         "container {\n"
+        "    heading \"Outer\"\n"
         "    container {\n"
-        "        text \"Nested\"\n"
+        "        text \"Inner\"\n"
+        "        container {\n"
+        "            text \"Innermost\"\n"
+        "        }\n"
         "    }\n"
         "}\n";
 
     Lexer lexer(source);
     Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
 
-    bool threw = false;
-    try {
-        parser.parse();
-    } catch (const ParseError&) {
-        threw = true;
-    }
+    assert(page.statements.size() == 1);
 
-    assert(threw);
+    const ast::ContainerStatement* outer =
+        std::get_if<ast::ContainerStatement>(&page.statements[0]);
+    assert(outer != nullptr);
+    assert(outer->children.size() == 2);
+
+    const ast::HeadingStatement* outerHeading =
+        std::get_if<ast::HeadingStatement>(&outer->children[0]);
+    assert(outerHeading != nullptr);
+    assert(outerHeading->text == "Outer");
+
+    const ast::Box<ast::ContainerStatement>* middleBox =
+        std::get_if<ast::Box<ast::ContainerStatement>>(&outer->children[1]);
+    assert(middleBox != nullptr);
+
+    const ast::ContainerStatement& middle = **middleBox;
+    assert(middle.children.size() == 2);
+
+    const ast::TextStatement* middleText =
+        std::get_if<ast::TextStatement>(&middle.children[0]);
+    assert(middleText != nullptr);
+    assert(middleText->text == "Inner");
+
+    const ast::Box<ast::ContainerStatement>* innerBox =
+        std::get_if<ast::Box<ast::ContainerStatement>>(&middle.children[1]);
+    assert(innerBox != nullptr);
+
+    const ast::ContainerStatement& inner = **innerBox;
+    assert(inner.children.size() == 1);
+
+    const ast::TextStatement* innerText =
+        std::get_if<ast::TextStatement>(&inner.children[0]);
+    assert(innerText != nullptr);
+    assert(innerText->text == "Innermost");
 }
 
 void testParserStyleOnLeafStatement() {

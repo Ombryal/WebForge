@@ -234,20 +234,14 @@ ast::ContainerChild Parser::parseContainerChild() {
         return parseListStatement();
     }
 
-    Token token = peek();
-
     if (check(TokenType::KeywordContainer)) {
-        throw ParseError(
-            "Nested containers are not supported yet, at line " +
-            std::to_string(token.line) +
-            ", column " +
-            std::to_string(token.column) +
-            "."
-        );
+        return ast::Box<ast::ContainerStatement>(parseContainerStatement());
     }
 
+    Token token = peek();
+
     throw ParseError(
-        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', or 'list' inside container at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', or 'container' inside container at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +

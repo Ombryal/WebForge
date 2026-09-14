@@ -212,3 +212,46 @@ void testCodegenIdAndClassAttributes() {
     assert(html.find("id:intro") == std::string::npos);
     assert(html.find("class:lead") == std::string::npos);
 }
+
+void testCodegenNestedContainers() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "container {\n"
+        "    heading \"Outer\"\n"
+        "    container {\n"
+        "        text \"Inner\"\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    std::size_t outerDivPos = html.find("<div>");
+    assert(outerDivPos != std::string::npos);
+
+    std::size_t innerDivPos = html.find("<div>", outerDivPos + 1);
+    assert(innerDivPos != std::string::npos);
+
+    std::size_t headingPos = html.find("<h1>Outer</h1>");
+    std::size_t innerTextPos = html.find("<p>Inner</p>");
+
+    assert(headingPos != std::string::npos);
+    assert(innerTextPos != std::string::npos);
+
+    // Heading belongs to the outer div, before the nested div starts.
+    assert(headingPos > outerDivPos && headingPos < innerDivPos);
+
+    // Inner text belongs inside the nested div.
+    assert(innerTextPos > innerDivPos);
+
+    // Two </div> closes for two levels of nesting.
+    std::size_t firstClose = html.find("</div>");
+    std::size_t secondClose = html.find("</div>", firstClose + 1);
+    assert(firstClose != std::string::npos);
+    assert(secondClose != std::string::npos);
+}
