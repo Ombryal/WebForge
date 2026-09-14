@@ -12,7 +12,7 @@ int main() {
     testParserBasicElements();
     testParserListStatement();
     testParserContainerStatement();
-    testParserRejectsNestedContainer();
+    testParserNestedContainers();
     testParserStyleOnLeafStatement();
     testParserStyleInsideButtonAndContainer();
     testParserLinkTarget();
@@ -27,6 +27,7 @@ int main() {
     testCodegenLinkTargetAndRel();
     testCodegenStylesheetAndMeta();
     testCodegenIdAndClassAttributes();
+    testCodegenNestedContainers();
 
     std::cout << "All tests passed\n";
     return 0;
