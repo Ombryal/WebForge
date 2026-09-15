@@ -1,6 +1,7 @@
 #include "webforge/codegen/CodeGen.h"
 
 #include <sstream>
+#include <string>
 #include <type_traits>
 #include <variant>
 
@@ -88,9 +89,11 @@ std::string HtmlGenerator::generateText(const ast::TextStatement& text) const {
 }
 
 std::string HtmlGenerator::generateHeading(const ast::HeadingStatement& heading) const {
+    std::string tag = "h" + std::to_string(heading.level);
+
     std::ostringstream out;
-    out << "  <h1" << buildElementAttributes(heading.style) << ">"
-        << escapeHtml(heading.text) << "</h1>\n";
+    out << "  <" << tag << buildElementAttributes(heading.style) << ">"
+        << escapeHtml(heading.text) << "</" << tag << ">\n";
     return out.str();
 }
 
@@ -125,14 +128,16 @@ std::string HtmlGenerator::generateButton(const ast::ButtonStatement& button) co
 }
 
 std::string HtmlGenerator::generateList(const ast::ListStatement& list) const {
+    std::string tag = list.ordered ? "ol" : "ul";
+
     std::ostringstream out;
-    out << "  <ul" << buildElementAttributes(list.style) << ">\n";
+    out << "  <" << tag << buildElementAttributes(list.style) << ">\n";
 
     for (const auto& item : list.items) {
         out << "    <li>" << escapeHtml(item) << "</li>\n";
     }
 
-    out << "  </ul>\n";
+    out << "  </" << tag << ">\n";
     return out.str();
 }
 
