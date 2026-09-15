@@ -23,6 +23,7 @@ struct TextStatement {
 
 struct HeadingStatement {
     std::string text;
+    int level = 1; // clamped to 1-6; compiles to <h1>..<h6>
     StyleProperties style;
 };
 
@@ -58,6 +59,7 @@ struct ButtonStatement {
 
 struct ListStatement {
     std::vector<std::string> items;
+    bool ordered = false; // false -> <ul>, true -> <ol>
     StyleProperties style;
 };
 
