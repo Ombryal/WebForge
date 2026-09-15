@@ -26,10 +26,12 @@ enum class TokenType {
     KeywordHover,
     KeywordFavicon,
     KeywordRaw,
+    KeywordOrdered,
 
     // Literals and identifiers
     Identifier,
     String,
+    Number,
 
     // Punctuation
     LeftBrace,

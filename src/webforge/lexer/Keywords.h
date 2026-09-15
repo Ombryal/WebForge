@@ -24,7 +24,8 @@ inline const std::unordered_map<std::string, TokenType> KEYWORDS = {
     {"meta",       TokenType::KeywordMeta},
     {"hover",      TokenType::KeywordHover},
     {"favicon",    TokenType::KeywordFavicon},
-    {"raw",        TokenType::KeywordRaw}
+    {"raw",        TokenType::KeywordRaw},
+    {"ordered",    TokenType::KeywordOrdered}
 };
 
 } // namespace webforge

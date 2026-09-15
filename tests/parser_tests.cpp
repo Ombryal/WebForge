@@ -372,3 +372,69 @@ void testParserFaviconAndRawHtml() {
     assert(rawInContainer != nullptr);
     assert(rawInContainer->html == "<br>");
 }
+
+void testParserHeadingLevel() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "heading \"Default\"\n"
+        "heading \"Explicit\" 3\n"
+        "heading \"TooHigh\" 9\n"
+        "heading \"TooLow\" 0\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 4);
+
+    const ast::HeadingStatement* defaultHeading =
+        std::get_if<ast::HeadingStatement>(&page.statements[0]);
+    assert(defaultHeading != nullptr);
+    assert(defaultHeading->level == 1);
+
+    const ast::HeadingStatement* explicitHeading =
+        std::get_if<ast::HeadingStatement>(&page.statements[1]);
+    assert(explicitHeading != nullptr);
+    assert(explicitHeading->level == 3);
+
+    const ast::HeadingStatement* tooHighHeading =
+        std::get_if<ast::HeadingStatement>(&page.statements[2]);
+    assert(tooHighHeading != nullptr);
+    assert(tooHighHeading->level == 6);
+
+    const ast::HeadingStatement* tooLowHeading =
+        std::get_if<ast::HeadingStatement>(&page.statements[3]);
+    assert(tooLowHeading != nullptr);
+    assert(tooLowHeading->level == 1);
+}
+
+void testParserOrderedList() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "list ordered {\n"
+        "    item \"First\"\n"
+        "    item \"Second\"\n"
+        "}\n"
+        "list {\n"
+        "    item \"Unordered\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 2);
+
+    const ast::ListStatement* ordered =
+        std::get_if<ast::ListStatement>(&page.statements[0]);
+    assert(ordered != nullptr);
+    assert(ordered->ordered == true);
+    assert(ordered->items.size() == 2);
+
+    const ast::ListStatement* unordered =
+        std::get_if<ast::ListStatement>(&page.statements[1]);
+    assert(unordered != nullptr);
+    assert(unordered->ordered == false);
+}

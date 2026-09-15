@@ -93,3 +93,32 @@ void testLexerSkipsComments() {
     assert(tokens[3].value == "Hello, world!");
     assert(tokens[4].type == TokenType::Eof);
 }
+
+void testLexerStringEscapeSequences() {
+    // Source text: raw "<hr class=\"divider\">\nline two\\end"
+    std::string source =
+        "raw \"<hr class=\\\"divider\\\">\\nline two\\\\end\"";
+
+    Lexer lexer(source);
+    std::vector<Token> tokens = lexer.tokenize();
+
+    assert(tokens.size() == 3);
+    assert(tokens[0].type == TokenType::KeywordRaw);
+    assert(tokens[1].type == TokenType::String);
+    assert(tokens[1].value == "<hr class=\"divider\">\nline two\\end");
+    assert(tokens[2].type == TokenType::Eof);
+}
+
+void testLexerNumericLiteral() {
+    std::string source = "heading \"Title\" 2";
+
+    Lexer lexer(source);
+    std::vector<Token> tokens = lexer.tokenize();
+
+    assert(tokens.size() == 4);
+    assert(tokens[0].type == TokenType::KeywordHeading);
+    assert(tokens[1].type == TokenType::String);
+    assert(tokens[2].type == TokenType::Number);
+    assert(tokens[2].value == "2");
+    assert(tokens[3].type == TokenType::Eof);
+}

@@ -1,5 +1,7 @@
 #include "webforge/parser/Parser.h"
 
+#include <algorithm>
+
 // Every individual statement parser, moved out of Parser.cpp verbatim to
 // keep that file focused on token-stream plumbing and top-level dispatch.
 
@@ -27,8 +29,15 @@ ast::HeadingStatement Parser::parseHeadingStatement() {
         "Expected string after 'heading'."
     );
 
+    int level = 1;
+    if (check(TokenType::Number)) {
+        Token levelToken = advance();
+        level = std::clamp(std::stoi(levelToken.value), 1, 6);
+    }
+
     return ast::HeadingStatement{
         .text = textToken.value,
+        .level = level,
         .style = parseStyleBlockIfPresent()
     };
 }
@@ -172,9 +181,15 @@ ast::Action Parser::parseAction() {
 
 ast::ListStatement Parser::parseListStatement() {
     consume(TokenType::KeywordList, "Expected 'list' statement.");
-    consume(TokenType::LeftBrace, "Expected '{' after 'list'.");
 
     ast::ListStatement list;
+
+    if (check(TokenType::KeywordOrdered)) {
+        advance();
+        list.ordered = true;
+    }
+
+    consume(TokenType::LeftBrace, "Expected '{' after 'list'.");
 
     while (!check(TokenType::RightBrace) && !isAtEnd()) {
         if (check(TokenType::String)) {

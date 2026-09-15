@@ -319,3 +319,45 @@ void testCodegenRawHtmlIsUnescaped() {
     assert(html.find("<hr>") != std::string::npos);
     assert(html.find("&lt;hr") == std::string::npos);
 }
+
+void testCodegenHeadingLevels() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "heading \"Default\"\n"
+        "heading \"Sub\" 3\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<h1>Default</h1>") != std::string::npos);
+    assert(html.find("<h3>Sub</h3>") != std::string::npos);
+}
+
+void testCodegenOrderedList() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "list ordered {\n"
+        "    item \"First\"\n"
+        "}\n"
+        "list {\n"
+        "    item \"Unordered\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("<ol>") != std::string::npos);
+    assert(html.find("</ol>") != std::string::npos);
+    assert(html.find("<ul>") != std::string::npos);
+    assert(html.find("</ul>") != std::string::npos);
+}
