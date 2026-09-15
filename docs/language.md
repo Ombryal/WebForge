@@ -22,6 +22,28 @@ ignored.
 
     page "Hello" // shown in the browser tab
 
+## String literals
+
+Strings are double-quoted, and support a small set of backslash escapes:
+
+| Escape | Meaning |
+|--------|---------|
+| `\"`   | literal `"` |
+| `\\`   | literal `\` |
+| `\n`   | newline |
+| `\t`   | tab |
+
+    raw "<hr class=\"divider\">"
+
+An unrecognized escape like `\z` is kept as-is (both the backslash and the
+character), rather than silently dropping the backslash.
+
+## Numbers
+
+A bare sequence of digits, optionally with one decimal point (`2`, `3.5`),
+is a number literal. Currently the only place a number is used is the
+optional heading level below; there's no arithmetic or numeric styling yet.
+
 ## Leaf statements
 
 These each compile to a single element and take one or two string arguments.
@@ -37,10 +59,15 @@ Compiles to:
 ### heading
 
     heading "Welcome"
+    heading "Section title" 2
 
 Compiles to:
 
     <h1>Welcome</h1>
+    <h2>Section title</h2>
+
+The optional number is the heading level, clamped to 1–6. Omitting it
+defaults to 1.
 
 ### image
 
@@ -78,6 +105,15 @@ Compiles to:
       <li>One</li>
       <li>Two</li>
     </ul>
+
+Add `ordered` before the block for a numbered list instead:
+
+    list ordered {
+        item "One"
+        item "Two"
+    }
+
+Compiles to `<ol>` instead of `<ul>`, with the same `<li>` items.
 
 ## button
 
@@ -233,5 +269,6 @@ inline content like `text` rather than head metadata like `stylesheet`.
 Not implemented yet:
 
 - WebForge-generated CSS (stylesheets are hand-written and only linked, for now)
-- Variables, conditionals, and loops
+- Variables, conditionals, and loops (numbers exist as a literal now, but
+  there's no arithmetic, comparisons, or control flow yet)
 - Multi-page projects and routing
