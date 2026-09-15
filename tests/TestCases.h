@@ -8,6 +8,8 @@
 void testLexerBasicPage();
 void testLexerButtonProgram();
 void testLexerSkipsComments();
+void testLexerStringEscapeSequences();
+void testLexerNumericLiteral();
 
 // --- Parser ---
 void testParserBasicPage();
@@ -22,6 +24,8 @@ void testParserLinkTarget();
 void testParserStylesheetAndMeta();
 void testParserOnHoverEvent();
 void testParserFaviconAndRawHtml();
+void testParserHeadingLevel();
+void testParserOrderedList();
 
 // --- Codegen ---
 void testCodegenBasicPage();
@@ -37,3 +41,5 @@ void testCodegenNestedContainers();
 void testCodegenClickAndHoverBothRender();
 void testCodegenFavicon();
 void testCodegenRawHtmlIsUnescaped();
+void testCodegenHeadingLevels();
+void testCodegenOrderedList();
