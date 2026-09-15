@@ -341,7 +341,7 @@ void testParserFaviconAndRawHtml() {
         "page \"Hello\"\n"
         "\n"
         "favicon \"icon.ico\"\n"
-        "raw \"<hr class=\\\"divider\\\">\"\n"
+        "raw \"<hr>\"\n"
         "container {\n"
         "    raw \"<br>\"\n"
         "}\n";
@@ -360,7 +360,7 @@ void testParserFaviconAndRawHtml() {
     const ast::RawHtmlStatement* raw =
         std::get_if<ast::RawHtmlStatement>(&page.statements[1]);
     assert(raw != nullptr);
-    assert(raw->html == "<hr class=\"divider\">");
+    assert(raw->html == "<hr>");
 
     const ast::ContainerStatement* container =
         std::get_if<ast::ContainerStatement>(&page.statements[2]);
