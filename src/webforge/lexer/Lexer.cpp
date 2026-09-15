@@ -69,7 +69,11 @@ Token Lexer::scanToken() {
     char c = peek();
 
     if (c == '"') return scanString();
-    
+
+    if (isDigit(c)) {
+        return scanNumber();
+    }
+
     if (isIdentifierStart(c)) {
         return scanIdentifierOrKeyword();
     }
@@ -95,7 +99,26 @@ Token Lexer::scanString() {
     std::string value;
 
     while (!isAtEnd() && peek() != '"') {
-        value += advance();
+        char c = advance();
+
+        if (c == '\\' && !isAtEnd()) {
+            char escaped = advance();
+            switch (escaped) {
+                case '"':  value += '"';  break;
+                case '\\': value += '\\'; break;
+                case 'n':  value += '\n'; break;
+                case 't':  value += '\t'; break;
+                default:
+                    // Unknown escape: keep both characters literally rather
+                    // than silently dropping the backslash.
+                    value += '\\';
+                    value += escaped;
+                    break;
+            }
+            continue;
+        }
+
+        value += c;
     }
 
     if (isAtEnd()) {
@@ -120,6 +143,26 @@ Token Lexer::scanIdentifierOrKeyword() {
     return makeToken(TokenType::Identifier, value);
 }
 
+Token Lexer::scanNumber() {
+    std::string value;
+
+    while (!isAtEnd() && isDigit(peek())) {
+        value += advance();
+    }
+
+    // A single '.' followed by a digit extends this into a decimal number.
+    if (!isAtEnd() && peek() == '.' &&
+        position_ + 1 < source_.length() &&
+        isDigit(source_[position_ + 1])) {
+        value += advance(); // consume '.'
+        while (!isAtEnd() && isDigit(peek())) {
+            value += advance();
+        }
+    }
+
+    return makeToken(TokenType::Number, value);
+}
+
 Token Lexer::makeToken(TokenType type, std::string value) const {
     Token token;
     token.type = type;
@@ -135,6 +178,10 @@ bool Lexer::isIdentifierStart(char c) {
 
 bool Lexer::isIdentifierPart(char c) {
     return std::isalnum(static_cast<unsigned char>(c)) || c == '_';
+}
+
+bool Lexer::isDigit(char c) {
+    return std::isdigit(static_cast<unsigned char>(c));
 }
 
 } // namespace webforge
