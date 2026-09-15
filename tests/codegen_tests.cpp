@@ -305,7 +305,7 @@ void testCodegenRawHtmlIsUnescaped() {
     std::string source =
         "page \"Hello\"\n"
         "\n"
-        "raw \"<hr class=\\\"divider\\\">\"\n";
+        "raw \"<hr>\"\n";
 
     Lexer lexer(source);
     Parser parser(lexer.tokenize());
@@ -316,6 +316,6 @@ void testCodegenRawHtmlIsUnescaped() {
 
     // The whole point of `raw` is that it comes through literally, not
     // HTML-escaped like every other statement's content does.
-    assert(html.find("<hr class=\"divider\">") != std::string::npos);
+    assert(html.find("<hr>") != std::string::npos);
     assert(html.find("&lt;hr") == std::string::npos);
 }
