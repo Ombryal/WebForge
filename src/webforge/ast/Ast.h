@@ -70,6 +70,7 @@ struct RawHtmlStatement {
 };
 
 struct ContainerStatement;
+struct SemanticContainerStatement;
 
 // A heap-boxed, copyable holder for a value of type T. Exists to break the
 // recursive-size cycle between ContainerStatement and ContainerChild: a
@@ -79,8 +80,9 @@ struct ContainerStatement;
 // unique_ptr gives it a fixed size (that of a pointer) while still behaving
 // like a normal value — copyable, with *box / box-> access. Constructors
 // take T by reference rather than by value specifically so Box<T> stays
-// well-formed while T (ContainerStatement) is still an incomplete type,
-// which it is at the point ContainerChild is declared below.
+// well-formed while T (ContainerStatement / SemanticContainerStatement) is
+// still an incomplete type, which it is at the point ContainerChild is
+// declared below.
 template <typename T>
 class Box {
 public:
@@ -108,7 +110,8 @@ private:
 
 // What a container is allowed to hold. A nested container is boxed (see
 // Box<T> above), so a container can now contain another container, to
-// arbitrary depth.
+// arbitrary depth — and containers and semantic containers can hold each
+// other freely, in either direction.
 using ContainerChild = std::variant<
     TextStatement,
     HeadingStatement,
@@ -117,9 +120,27 @@ using ContainerChild = std::variant<
     ButtonStatement,
     ListStatement,
     RawHtmlStatement,
-    Box<ContainerStatement>>;
+    Box<ContainerStatement>,
+    Box<SemanticContainerStatement>>;
 
 struct ContainerStatement {
+    std::vector<ContainerChild> children;
+    StyleProperties style;
+};
+
+enum class SemanticTag {
+    Nav,
+    Header,
+    Footer,
+    Main,
+    Section,
+    Article
+};
+
+// Same shape as ContainerStatement, but compiles to a semantic tag (<nav>,
+// <header>, etc.) instead of always <div>.
+struct SemanticContainerStatement {
+    SemanticTag tag;
     std::vector<ContainerChild> children;
     StyleProperties style;
 };
@@ -149,6 +170,7 @@ using Statement = std::variant<
     ListStatement,
     RawHtmlStatement,
     ContainerStatement,
+    SemanticContainerStatement,
     StylesheetStatement,
     MetaStatement,
     FaviconStatement>;
