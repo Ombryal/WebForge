@@ -6,6 +6,8 @@ int main() {
     testLexerBasicPage();
     testLexerButtonProgram();
     testLexerSkipsComments();
+    testLexerStringEscapeSequences();
+    testLexerNumericLiteral();
 
     testParserBasicPage();
     testParserButtonProgram();
@@ -19,6 +21,8 @@ int main() {
     testParserStylesheetAndMeta();
     testParserOnHoverEvent();
     testParserFaviconAndRawHtml();
+    testParserHeadingLevel();
+    testParserOrderedList();
 
     testCodegenBasicPage();
     testCodegenButtonProgram();
@@ -33,6 +37,8 @@ int main() {
     testCodegenClickAndHoverBothRender();
     testCodegenFavicon();
     testCodegenRawHtmlIsUnescaped();
+    testCodegenHeadingLevels();
+    testCodegenOrderedList();
 
     std::cout << "All tests passed\n";
     return 0;
