@@ -17,6 +17,8 @@ int main() {
     testParserStyleInsideButtonAndContainer();
     testParserLinkTarget();
     testParserStylesheetAndMeta();
+    testParserOnHoverEvent();
+    testParserFaviconAndRawHtml();
 
     testCodegenBasicPage();
     testCodegenButtonProgram();
@@ -28,6 +30,9 @@ int main() {
     testCodegenStylesheetAndMeta();
     testCodegenIdAndClassAttributes();
     testCodegenNestedContainers();
+    testCodegenClickAndHoverBothRender();
+    testCodegenFavicon();
+    testCodegenRawHtmlIsUnescaped();
 
     std::cout << "All tests passed\n";
     return 0;
