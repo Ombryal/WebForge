@@ -1,0 +1,13 @@
+page "Hello World"
+
+heading "Welcome to WebForge"
+
+container {
+    text "One file. One language. One website."
+
+    button "Say Hi" {
+        on click {
+            alert("Hello from WebForge!")
+        }
+    }
+}

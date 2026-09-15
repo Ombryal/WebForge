@@ -11,7 +11,7 @@
 ![Status](https://img.shields.io/badge/status-early%20development-orange?style=for-the-badge)
 ![C++20](https://img.shields.io/badge/C%2B%2B-20-00599C?style=for-the-badge&logo=cplusplus&logoColor=white)
 ![CMake](https://img.shields.io/badge/CMake-3.22%2B-064F8C?style=for-the-badge&logo=cmake&logoColor=white)
-![License](https://img.shields.io/github/license/<Ombryal>/WebForge?style=for-the-badge)
+![License](https://img.shields.io/github/license/Ombryal/WebForge?style=for-the-badge)
 
 <br/>
 
@@ -159,11 +159,22 @@ WebForge/
 ├── tests/
 ├── docs/
 ├── CMakeLists.txt
+├── CONTRIBUTING.md
+├── SECURITY.md
+├── CODE_OF_CONDUCT.md
+├── CHANGELOG.md
 ├── LICENSE
 └── README.md
 ```
 
 ---
+
+## 🧰 Requirements
+
+- A C++20 compiler (g++ or clang++)
+- CMake 3.22 or newer
+
+No other dependencies — everything else ships in the standard library.
 
 ## 🛠️ Build
 
@@ -176,6 +187,34 @@ cmake --build build
 
 ./build/webforge examples/hello.wf
 ```
+
+By default the compiler writes its output next to the source file (here,
+`examples/hello.html`). Pass a second argument for an explicit output path:
+
+```bash
+./build/webforge examples/hello.wf out/hello.html
+```
+
+## ✅ Running tests
+
+```bash
+g++ -std=c++20 -Isrc \
+    tests/compiler_tests.cpp \
+    tests/lexer_tests.cpp \
+    tests/parser_tests.cpp \
+    tests/codegen_tests.cpp \
+    src/webforge/lexer/Lexer.cpp \
+    src/webforge/parser/Parser.cpp \
+    src/webforge/parser/ParserStatements.cpp \
+    src/webforge/codegen/CodeGen.cpp \
+    -o build/compiler_tests
+
+./build/compiler_tests
+```
+
+CI (`.github/workflows/ci.yml`) runs the same steps, but only when
+triggered manually from the Actions tab — it doesn't run automatically on
+push or pull request.
 
 ---
 
@@ -203,7 +242,8 @@ Packages + WebForge Ecosystem
 
 ## 📖 Documentation
 
-See [`docs/language.md`](docs/language.md) for the current language reference.
+See [`docs/language.md`](docs/language.md) for the current language reference,
+and [`CHANGELOG.md`](CHANGELOG.md) for what's shipped so far.
 
 ---
 
@@ -211,7 +251,15 @@ See [`docs/language.md`](docs/language.md) for the current language reference.
 
 WebForge is still in early development and the language may change significantly.
 
-Issues, ideas and pull requests are welcome.
+Issues, ideas and pull requests are welcome — see
+[`CONTRIBUTING.md`](CONTRIBUTING.md) for how the project is branched,
+committed, built, and tested, and
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) for how we expect people to
+treat each other here.
+
+## 🔒 Security
+
+See [`SECURITY.md`](SECURITY.md) for how to report a vulnerability.
 
 ---
 
