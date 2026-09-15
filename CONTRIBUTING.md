@@ -69,7 +69,7 @@ Then:
   HTML-context escaping; don't bypass it unless you're deliberately adding
   something like `raw` (and if you are, document the risk clearly).
 - Keep files from growing unbounded. As a rough guide, once a single file
-  crosses ~500–600 lines, consider splitting it by concern (the way
+  crosses ~800–1,000 lines, consider splitting it by concern (the way
   `Parser.cpp`/`ParserStatements.cpp` and the `tests/*.cpp` files are
   already split) rather than continuing to grow it.
 - Match the existing formatting and naming in the file you're editing over
