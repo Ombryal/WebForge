@@ -20,6 +20,8 @@ void testParserStyleOnLeafStatement();
 void testParserStyleInsideButtonAndContainer();
 void testParserLinkTarget();
 void testParserStylesheetAndMeta();
+void testParserOnHoverEvent();
+void testParserFaviconAndRawHtml();
 
 // --- Codegen ---
 void testCodegenBasicPage();
@@ -32,3 +34,6 @@ void testCodegenLinkTargetAndRel();
 void testCodegenStylesheetAndMeta();
 void testCodegenIdAndClassAttributes();
 void testCodegenNestedContainers();
+void testCodegenClickAndHoverBothRender();
+void testCodegenFavicon();
+void testCodegenRawHtmlIsUnescaped();

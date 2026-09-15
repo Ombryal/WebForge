@@ -36,6 +36,8 @@ private:
     ast::StyleProperty parseStyleProperty();
     ast::StylesheetStatement parseStylesheetStatement();
     ast::MetaStatement parseMetaStatement();
+    ast::FaviconStatement parseFaviconStatement();
+    ast::RawHtmlStatement parseRawHtmlStatement();
 
     bool match(TokenType type);
     bool check(TokenType type) const;

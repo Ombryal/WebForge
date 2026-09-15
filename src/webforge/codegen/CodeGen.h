@@ -24,12 +24,15 @@ private:
     std::string generateLink(const ast::LinkStatement& link) const;
     std::string generateButton(const ast::ButtonStatement& button) const;
     std::string generateList(const ast::ListStatement& list) const;
+    std::string generateRawHtml(const ast::RawHtmlStatement& raw) const;
     std::string generateContainer(const ast::ContainerStatement& container) const;
     std::string generateContainerChild(const ast::ContainerChild& child) const;
     std::string generateStylesheet(const ast::StylesheetStatement& stylesheet) const;
     std::string generateMeta(const ast::MetaStatement& meta) const;
+    std::string generateFavicon(const ast::FaviconStatement& favicon) const;
 
-    std::string generateClickJs(const ast::ButtonStatement& button) const;
+    std::string generateEventAttributes(const ast::ButtonStatement& button) const;
+    std::string generateEventJs(const ast::ButtonStatement& button, const std::string& eventName) const;
     std::string generateActionJs(const ast::Action& action) const;
 
     static std::string buildElementAttributes(const ast::StyleProperties& style);

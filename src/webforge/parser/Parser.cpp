@@ -71,9 +71,17 @@ ast::Statement Parser::parseStatement() {
         return parseMetaStatement();
     }
 
+    if (check(TokenType::KeywordFavicon)) {
+        return parseFaviconStatement();
+    }
+
+    if (check(TokenType::KeywordRaw)) {
+        return parseRawHtmlStatement();
+    }
+
     Token token = peek();
     throw ParseError(
-        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', 'container', 'stylesheet', or 'meta' at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', 'container', 'stylesheet', 'meta', 'favicon', or 'raw' at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +

@@ -114,10 +114,18 @@ ast::ButtonStatement Parser::parseButtonStatement() {
 ast::EventHandler Parser::parseEventHandler() {
     consume(TokenType::KeywordOn, "Expected 'on' inside button block.");
 
-    Token eventToken = consume(
-        TokenType::KeywordClick,
-        "Currently only 'on click' events are supported."
-    );
+    Token eventToken = peek();
+
+    if (!check(TokenType::KeywordClick) && !check(TokenType::KeywordHover)) {
+        throw ParseError(
+            "Expected 'click' or 'hover' after 'on'. Found '" + eventToken.value + "'" +
+            " at line " + std::to_string(eventToken.line) +
+            ", column " + std::to_string(eventToken.column) +
+            "."
+        );
+    }
+
+    advance();
 
     consume(
         TokenType::LeftBrace,
@@ -234,6 +242,10 @@ ast::ContainerChild Parser::parseContainerChild() {
         return parseListStatement();
     }
 
+    if (check(TokenType::KeywordRaw)) {
+        return parseRawHtmlStatement();
+    }
+
     if (check(TokenType::KeywordContainer)) {
         return ast::Box<ast::ContainerStatement>(parseContainerStatement());
     }
@@ -241,7 +253,7 @@ ast::ContainerChild Parser::parseContainerChild() {
     Token token = peek();
 
     throw ParseError(
-        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', or 'container' inside container at line " +
+        "Expected statement such as 'text', 'heading', 'image', 'link', 'button', 'list', 'raw', or 'container' inside container at line " +
         std::to_string(token.line) +
         ", column " +
         std::to_string(token.column) +
@@ -313,6 +325,32 @@ ast::MetaStatement Parser::parseMetaStatement() {
     return ast::MetaStatement{
         .name = nameToken.value,
         .content = contentToken.value
+    };
+}
+
+ast::FaviconStatement Parser::parseFaviconStatement() {
+    consume(TokenType::KeywordFavicon, "Expected 'favicon' statement.");
+
+    Token hrefToken = consume(
+        TokenType::String,
+        "Expected favicon path string after 'favicon'."
+    );
+
+    return ast::FaviconStatement{
+        .href = hrefToken.value
+    };
+}
+
+ast::RawHtmlStatement Parser::parseRawHtmlStatement() {
+    consume(TokenType::KeywordRaw, "Expected 'raw' statement.");
+
+    Token htmlToken = consume(
+        TokenType::String,
+        "Expected HTML string after 'raw'."
+    );
+
+    return ast::RawHtmlStatement{
+        .html = htmlToken.value
     };
 }
 

@@ -42,6 +42,8 @@ std::string HtmlGenerator::generateHeadExtra(const ast::Statement& statement) co
             return generateStylesheet(value);
         } else if constexpr (std::is_same_v<T, ast::MetaStatement>) {
             return generateMeta(value);
+        } else if constexpr (std::is_same_v<T, ast::FaviconStatement>) {
+            return generateFavicon(value);
         } else {
             return ""; // Body statements have no <head> content.
         }
@@ -64,10 +66,13 @@ std::string HtmlGenerator::generateStatement(const ast::Statement& statement) co
             return generateButton(value);
         } else if constexpr (std::is_same_v<T, ast::ListStatement>) {
             return generateList(value);
+        } else if constexpr (std::is_same_v<T, ast::RawHtmlStatement>) {
+            return generateRawHtml(value);
         } else if constexpr (std::is_same_v<T, ast::ContainerStatement>) {
             return generateContainer(value);
         } else if constexpr (std::is_same_v<T, ast::StylesheetStatement> ||
-                              std::is_same_v<T, ast::MetaStatement>) {
+                              std::is_same_v<T, ast::MetaStatement> ||
+                              std::is_same_v<T, ast::FaviconStatement>) {
             return ""; // Already emitted into <head> by generateHeadExtra.
         } else {
             static_assert(!sizeof(T*), "Unhandled ast::Statement alternative in codegen");
@@ -112,14 +117,9 @@ std::string HtmlGenerator::generateLink(const ast::LinkStatement& link) const {
 }
 
 std::string HtmlGenerator::generateButton(const ast::ButtonStatement& button) const {
-    std::string js = generateClickJs(button);
-
     std::ostringstream out;
-    out << "  <button";
-    if (!js.empty()) {
-        out << " onclick=\"" << escapeHtml(js) << "\"";
-    }
-    out << buildElementAttributes(button.style) << ">"
+    out << "  <button" << generateEventAttributes(button)
+        << buildElementAttributes(button.style) << ">"
         << escapeHtml(button.label) << "</button>\n";
     return out.str();
 }
@@ -133,6 +133,14 @@ std::string HtmlGenerator::generateList(const ast::ListStatement& list) const {
     }
 
     out << "  </ul>\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateRawHtml(const ast::RawHtmlStatement& raw) const {
+    // Deliberately NOT escaped — this is the escape hatch. The caller is
+    // responsible for anything they pass here being safe to inject as-is.
+    std::ostringstream out;
+    out << "  " << raw.html << "\n";
     return out.str();
 }
 
@@ -164,6 +172,8 @@ std::string HtmlGenerator::generateContainerChild(const ast::ContainerChild& chi
             return generateButton(value);
         } else if constexpr (std::is_same_v<T, ast::ListStatement>) {
             return generateList(value);
+        } else if constexpr (std::is_same_v<T, ast::RawHtmlStatement>) {
+            return generateRawHtml(value);
         } else if constexpr (std::is_same_v<T, ast::Box<ast::ContainerStatement>>) {
             return generateContainer(*value);
         } else {
@@ -185,12 +195,34 @@ std::string HtmlGenerator::generateMeta(const ast::MetaStatement& meta) const {
     return out.str();
 }
 
-std::string HtmlGenerator::generateClickJs(const ast::ButtonStatement& button) const {
+std::string HtmlGenerator::generateFavicon(const ast::FaviconStatement& favicon) const {
+    std::ostringstream out;
+    out << "  <link rel=\"icon\" href=\"" << escapeHtml(favicon.href) << "\">\n";
+    return out.str();
+}
+
+std::string HtmlGenerator::generateEventAttributes(const ast::ButtonStatement& button) const {
+    std::ostringstream out;
+
+    std::string clickJs = generateEventJs(button, "click");
+    if (!clickJs.empty()) {
+        out << " onclick=\"" << escapeHtml(clickJs) << "\"";
+    }
+
+    std::string hoverJs = generateEventJs(button, "hover");
+    if (!hoverJs.empty()) {
+        out << " onmouseover=\"" << escapeHtml(hoverJs) << "\"";
+    }
+
+    return out.str();
+}
+
+std::string HtmlGenerator::generateEventJs(const ast::ButtonStatement& button, const std::string& eventName) const {
     std::ostringstream js;
 
     for (const auto& handler : button.handlers) {
-        if (handler.eventName != "click") {
-            continue; // Only 'on click' is supported at this milestone.
+        if (handler.eventName != eventName) {
+            continue;
         }
 
         for (const auto& action : handler.actions) {

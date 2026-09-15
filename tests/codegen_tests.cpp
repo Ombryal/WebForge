@@ -255,3 +255,67 @@ void testCodegenNestedContainers() {
     assert(firstClose != std::string::npos);
     assert(secondClose != std::string::npos);
 }
+
+void testCodegenClickAndHoverBothRender() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "button \"Hover me\" {\n"
+        "    on click {\n"
+        "        alert(\"Clicked\")\n"
+        "    }\n"
+        "    on hover {\n"
+        "        alert(\"Hovered\")\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    assert(html.find("onclick=\"alert(&#39;Clicked&#39;);\"") != std::string::npos);
+    assert(html.find("onmouseover=\"alert(&#39;Hovered&#39;);\"") != std::string::npos);
+}
+
+void testCodegenFavicon() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "favicon \"icon.ico\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    std::size_t headStart = html.find("<head>");
+    std::size_t headEnd = html.find("</head>");
+    std::size_t faviconPos = html.find("<link rel=\"icon\" href=\"icon.ico\">");
+
+    assert(faviconPos != std::string::npos);
+    assert(faviconPos > headStart && faviconPos < headEnd);
+}
+
+void testCodegenRawHtmlIsUnescaped() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "raw \"<hr class=\\\"divider\\\">\"\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    codegen::HtmlGenerator generator(page);
+    std::string html = generator.generate();
+
+    // The whole point of `raw` is that it comes through literally, not
+    // HTML-escaped like every other statement's content does.
+    assert(html.find("<hr class=\"divider\">") != std::string::npos);
+    assert(html.find("&lt;hr") == std::string::npos);
+}

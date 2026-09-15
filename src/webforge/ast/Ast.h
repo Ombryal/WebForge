@@ -61,6 +61,12 @@ struct ListStatement {
     StyleProperties style;
 };
 
+// An escape hatch: `html` is emitted completely unescaped, unlike every
+// other statement. Valid both at page level and inside a container.
+struct RawHtmlStatement {
+    std::string html;
+};
+
 struct ContainerStatement;
 
 // A heap-boxed, copyable holder for a value of type T. Exists to break the
@@ -108,6 +114,7 @@ using ContainerChild = std::variant<
     LinkStatement,
     ButtonStatement,
     ListStatement,
+    RawHtmlStatement,
     Box<ContainerStatement>>;
 
 struct ContainerStatement {
@@ -126,6 +133,11 @@ struct MetaStatement {
     std::string content;
 };
 
+// Page-level only: emitted into <head>, not valid inside a container.
+struct FaviconStatement {
+    std::string href;
+};
+
 using Statement = std::variant<
     TextStatement,
     HeadingStatement,
@@ -133,9 +145,11 @@ using Statement = std::variant<
     LinkStatement,
     ButtonStatement,
     ListStatement,
+    RawHtmlStatement,
     ContainerStatement,
     StylesheetStatement,
-    MetaStatement>;
+    MetaStatement,
+    FaviconStatement>;
 
 struct Page {
     std::string title;
