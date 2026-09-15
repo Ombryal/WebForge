@@ -25,10 +25,12 @@ private:
 
     Token scanString();
     Token scanIdentifierOrKeyword();
+    Token scanNumber();
     Token scanSingleCharToken(TokenType type);
 
     static bool isIdentifierStart(char c);
     static bool isIdentifierPart(char c);
+    static bool isDigit(char c);
 
     std::string source_;
     std::size_t position_ = 0;
