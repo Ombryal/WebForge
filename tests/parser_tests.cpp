@@ -309,3 +309,66 @@ void testParserStylesheetAndMeta() {
     assert(meta->name == "description");
     assert(meta->content == "A test page.");
 }
+
+void testParserOnHoverEvent() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "button \"Hover me\" {\n"
+        "    on click {\n"
+        "        alert(\"Clicked\")\n"
+        "    }\n"
+        "    on hover {\n"
+        "        alert(\"Hovered\")\n"
+        "    }\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    const ast::ButtonStatement* button =
+        std::get_if<ast::ButtonStatement>(&page.statements[0]);
+
+    assert(button != nullptr);
+    assert(button->handlers.size() == 2);
+    assert(button->handlers[0].eventName == "click");
+    assert(button->handlers[1].eventName == "hover");
+}
+
+void testParserFaviconAndRawHtml() {
+    std::string source =
+        "page \"Hello\"\n"
+        "\n"
+        "favicon \"icon.ico\"\n"
+        "raw \"<hr class=\\\"divider\\\">\"\n"
+        "container {\n"
+        "    raw \"<br>\"\n"
+        "}\n";
+
+    Lexer lexer(source);
+    Parser parser(lexer.tokenize());
+    ast::Page page = parser.parse();
+
+    assert(page.statements.size() == 3);
+
+    const ast::FaviconStatement* favicon =
+        std::get_if<ast::FaviconStatement>(&page.statements[0]);
+    assert(favicon != nullptr);
+    assert(favicon->href == "icon.ico");
+
+    const ast::RawHtmlStatement* raw =
+        std::get_if<ast::RawHtmlStatement>(&page.statements[1]);
+    assert(raw != nullptr);
+    assert(raw->html == "<hr class=\"divider\">");
+
+    const ast::ContainerStatement* container =
+        std::get_if<ast::ContainerStatement>(&page.statements[2]);
+    assert(container != nullptr);
+    assert(container->children.size() == 1);
+
+    const ast::RawHtmlStatement* rawInContainer =
+        std::get_if<ast::RawHtmlStatement>(&container->children[0]);
+    assert(rawInContainer != nullptr);
+    assert(rawInContainer->html == "<br>");
+}
