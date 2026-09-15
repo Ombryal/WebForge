@@ -87,10 +87,14 @@ A label plus one or more event handlers.
         on click {
             alert("Hello from WebForge!")
         }
+        on hover {
+            alert("You're hovering!")
+        }
     }
 
-`on click` is currently the only supported event, and `alert(...)` the only
-supported action. Compiles to a `<button>` with an inline `onclick`.
+`click` and `hover` are the two supported events (`hover` compiles to
+`onmouseover`), and `alert(...)` the only supported action. A button can
+have both at once, each rendered as its own attribute.
 
 ## container
 
@@ -102,8 +106,8 @@ Groups other statements together.
     }
 
 Compiles to a `<div>` wrapping its children. A container can hold `text`,
-`heading`, `image`, `link`, `button`, `list`, and another `container`, to
-any depth:
+`heading`, `image`, `link`, `button`, `list`, `raw`, and another
+`container`, to any depth:
 
     container {
         heading "Outer"
@@ -190,6 +194,39 @@ Compiles to, inside `<head>`:
 
 `stylesheet` and `meta` are page-level only — neither is valid inside a
 `container`.
+
+## favicon
+
+A page-level statement for the site's favicon.
+
+    favicon "icon.ico"
+
+Compiles to, inside `<head>`:
+
+    <link rel="icon" href="icon.ico">
+
+Page-level only, same as `stylesheet` and `meta`.
+
+## raw — unescaped HTML escape hatch
+
+    raw "<hr>"
+
+Compiles to exactly:
+
+    <hr>
+
+**This is the one statement that skips HTML escaping entirely.** Every
+other statement in WebForge escapes what you give it, so `text "<b>hi</b>"`
+prints the literal characters `<b>hi</b>` rather than bolding anything.
+`raw` does the opposite on purpose — whatever string you pass appears
+verbatim in the output. That makes it easy to inject broken markup or, if
+the string ever comes from something other than a hand-written literal
+(user input, a file, a network response), a genuine XSS vulnerability. Only
+use `raw` with content you wrote and trust; never with anything a user
+could influence.
+
+`raw` is valid both at page level and inside a `container`, since it's
+inline content like `text` rather than head metadata like `stylesheet`.
 
 ## Planned next additions
 
